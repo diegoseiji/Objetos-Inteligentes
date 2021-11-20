@@ -1,0 +1,81 @@
+#include <ESP8266WiFi.h>
+#include <BlynkSimpleEsp8266.h>
+
+
+char auth[] = "y7Y2YBm1R2lpFBVBE2bRtvi75ExJCYWs"; 
+
+char ssid[] = "pepelegal";  
+char pass[] = "b0rb0rema"; 
+
+
+
+int PinoAnalogico = A0;
+int PinoDigital = 4; 
+
+int Rele = 5; 
+
+int EstadoSensor = 0;
+int UltimoEstSensor = 0;
+
+
+
+int  ValAnalogIn; 
+
+void setup() {
+Serial.begin(9600); 
+Blynk.begin(auth, ssid, pass);
+
+pinMode(Rele, OUTPUT); 
+pinMode(PinoDigital, INPUT);
+
+}
+
+void loop() {
+
+
+
+  Blynk.run();
+
+  EstadoSensor = digitalRead(PinoDigital);
+
+if (EstadoSensor == 1 &&  UltimoEstSensor == 0) {
+
+  Blynk.notify("Umidade Baixa: Irrigando a Planta");
+  UltimoEstSensor = 1;
+  delay(1000);
+
+
+  } 
+  else if (EstadoSensor == 1 &&  UltimoEstSensor == 1) {
+  delay(1000);
+  }
+  else {
+
+     UltimoEstSensor = 0;
+    delay(1000);
+  }
+
+
+
+ValAnalogIn = analogRead(PinoAnalogico);
+int Porcento = map(ValAnalogIn, 1023, 0, 0, 100); 
+
+Serial.print("Umidade: "); 
+Serial.print(Porcento); 
+Serial.println("%");
+ 
+
+
+if (Porcento <= 76) { // Se a porcentagem for menor ou igual à 76%. OBS: Você pode alterar essa porcentagem 
+
+Serial.println("Irrigando Planta"); // Imprime no monitor serial
+digitalWrite(Rele, LOW); // Aciona Relé
+}
+
+else { // Caso contrario 
+
+Serial.println("Planta Irrigada"); // Imprime a  no monitor serial
+digitalWrite(Rele, HIGH); // Desliga Relé
+delay (1000);
+}
+}
